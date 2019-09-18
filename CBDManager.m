@@ -3,23 +3,27 @@
 
 @implementation CBDManager
 
-+(instancetype)sharedInstance {
++ (instancetype)sharedInstance {
 	static CBDManager *sharedInstance = nil;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
-		sharedInstance = [CBDManager alloc];
-		sharedInstance.defaults = [NSUserDefaults standardUserDefaults];
-		sharedInstance.savedLayouts = [NSMutableDictionary new];
-		[sharedInstance load];
+		sharedInstance = [[self alloc] init];
 	});
 	return sharedInstance;
 }
 
--(id)init {
-	return [CBDManager sharedInstance];
+- (instancetype)init {
+	self = [super init];
+	if (self) {
+		self.defaults = [NSUserDefaults standardUserDefaults];
+		self.savedLayouts = [NSMutableDictionary new];
+		[self load];	
+	}
+
+	return self;
 }
 
--(void)load {
+- (void)load {
 	self.hideIconLabels = [self.defaults boolForKey:@"hideIconLabels"];
 	self.hideIconDots = [self.defaults boolForKey:@"hideIconDots"];
 	self.homescreenColumns = [self.defaults integerForKey:@"homescreenColumns"];
@@ -35,7 +39,7 @@
 	}
 }
 
--(void)save {
+- (void)save {
 	[self.defaults setBool:self.hideIconLabels forKey:@"hideIconLabels"];
 	[self.defaults setBool:self.hideIconDots forKey:@"hideIconDots"];
 	[self.defaults setInteger:self.homescreenColumns forKey:@"homescreenColumns"];
@@ -48,7 +52,7 @@
 	[self.defaults synchronize];
 }
 
--(void)reset {
+- (void)reset {
 	self.hideIconLabels = NO;
 	self.hideIconDots = NO;
 	self.homescreenColumns = 0;
@@ -61,24 +65,24 @@
 	[self relayoutAllAnimated];
 }
 
--(void)relayout {
+- (void)relayout {
 	SBIconController *iconController = [NSClassFromString(@"SBIconController") sharedInstance];
 	SBRootIconListView *listView = [iconController rootIconListAtIndex:[iconController currentIconListIndex]];
-	[UIView animateWithDuration:(0.15) delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+	[UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 		[listView layoutIconsNow];
 	} completion:NULL];
 }
 
--(void)relayoutAll {
+- (void)relayoutAll {
 	SBIconController *iconController = [NSClassFromString(@"SBIconController") sharedInstance];
 	[iconController relayout];
 	[self.view.superview bringSubviewToFront:self.view];
 }
 
--(void)relayoutAllAnimated {
+- (void)relayoutAllAnimated {
 	SBIconController *iconController = [NSClassFromString(@"SBIconController") sharedInstance];
 	SBRootIconListView *listView = [iconController rootIconListAtIndex:[iconController currentIconListIndex]];
-	[UIView animateWithDuration:(0.15) delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+	[UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 		[listView layoutIconsNow];
 	} completion:^(BOOL whatever) {
 		[iconController relayout];
@@ -86,8 +90,11 @@
 	}];
 }
 
--(void)loadLayoutWithName:(NSString *)name {
-	if (!self.savedLayouts[name]) return;
+- (void)loadLayoutWithName:(NSString *)name {
+	if (!self.savedLayouts[name]) {
+		return;
+	}
+
 	NSDictionary *layout = self.savedLayouts[name];
 	self.hideIconLabels      = layout[@"hideIconLabels"]      ? [layout[@"hideIconLabels"] isEqualToString:@"YES"]  : NO;
 	self.hideIconDots        = layout[@"hideIconDots"]        ? [layout[@"hideIconDots"] isEqualToString:@"YES"]    : NO;
@@ -100,7 +107,7 @@
 	[self relayoutAllAnimated];
 }
 
--(NSDictionary *)currentSettingsAsDictionary {
+- (NSDictionary *)currentSettingsAsDictionary {
 	return @{
 		@"hideIconLabels": self.hideIconLabels ? @"YES" : @"NO",
 		@"hideIconDots": self.hideIconDots ? @"YES" : @"NO",
@@ -113,7 +120,7 @@
 	};
 }
 
--(NSString *)layoutDescription:(NSDictionary *)layout {
+- (NSString *)layoutDescription:(NSDictionary *)layout {
 	return [NSString stringWithFormat:@"Hide icon labels: %@\nHomescreen columns: %@\nHomescreen rows: %@\nVertical offset: %@\nHorizontal offset: %@\nVertical padding: %@\nHorizontal padding: %@",
 		layout[@"hideIconLabels"],
 		layout[@"homescreenColumns"],
@@ -125,33 +132,33 @@
 	];
 }
 
--(void)saveLayoutWithName:(NSString *)name {
+- (void)saveLayoutWithName:(NSString *)name {
 	self.savedLayouts[name] = [self currentSettingsAsDictionary];
 	[self save];
 }
 
--(void)deleteLayoutWithName:(NSString *)name {
+- (void)deleteLayoutWithName:(NSString *)name {
 	[self.savedLayouts removeObjectForKey:name];
 	[self save];
 }
 
--(void)renameLayoutWithName:(NSString *)name toName:(NSString *)newName {
+- (void)renameLayoutWithName:(NSString *)name toName:(NSString *)newName {
 	self.savedLayouts[newName] = self.savedLayouts[name];
 	[self.savedLayouts removeObjectForKey:name];
 	[self save];
 }
 
--(void)deleteAllLayouts {
+- (void)deleteAllLayouts {
 	self.savedLayouts = [NSMutableDictionary new];
 	[self save];
 }
 
--(void)stopEditing {
+- (void)stopEditing {
 	SBIconController *iconController = [NSClassFromString(@"SBIconController") sharedInstance];
 	[iconController setIsEditing:NO];
 }
 
--(void)presentViewController:(UIViewController*)viewController animated:(BOOL)animated completion:(id)completion {
+- (void)presentViewController:(UIViewController*)viewController animated:(BOOL)animated completion:(id)completion {
 	SBIconController *iconController = [NSClassFromString(@"SBIconController") sharedInstance];
 	[iconController presentViewController:viewController animated:animated completion:completion];
 }

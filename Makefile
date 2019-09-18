@@ -1,12 +1,12 @@
-ARCHS = armv7 arm64 arm64e
+export TARGET = iphone:latest:12.0
+export ARCHS = arm64e
+
+INSTALL_TARGET_PROCESSES = SpringBoard
 
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = Cuboid
-Cuboid_FILES = Tweak.xm $(wildcard CBD*.m)
-Cuboid_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_FILES = $(wildcard *.[xm]) Tweak.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-
-after-install::
-	install.exec "killall -9 SpringBoard"

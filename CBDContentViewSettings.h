@@ -8,7 +8,7 @@
 @property (nonatomic, strong) UIButton *resetButton;
 @property (nonatomic, strong) UIButton *showButton;
 
-@property (nonatomic, retain) UIView* emptyView;
-@property (nonatomic, retain) UILabel* listEmptyLabel;
+@property (nonatomic, strong) UIView *emptyView;
+@property (nonatomic, strong) UILabel *listEmptyLabel;
 
 @end

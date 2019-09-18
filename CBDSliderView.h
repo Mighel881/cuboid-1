@@ -5,7 +5,7 @@
 @property (nonatomic, strong) UIButton *valueButton;
 @property (nonatomic, assign) BOOL isInteger;
 
--(NSString *)valueAsString;
--(void)updateValue:(id)sender;
+- (NSString *)valueAsString;
+- (void)updateValue:(id)sender;
 
 @end
