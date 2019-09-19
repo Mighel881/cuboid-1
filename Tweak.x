@@ -1,20 +1,6 @@
 #import "Tweak.h"
 #import "CBDManager.h"
-
-%hook SBRootFolderController
-
--(void)setEditingStatusBarAssertion:(id)arg1 {}
-
-%end
-
-%hook SBEditingDoneButton
-
--(void)layoutSubviews {
-	%orig;
-	self.hidden = 1;
-}
-
-%end
+#import <SpringBoard/SBUIController.h>
 
 %hook SBIconLegibilityLabelView
 
@@ -75,20 +61,27 @@
 
 %end
 
-%hook UIStatusBarWindow
+%hook SBUIController
 
--(instancetype)initWithFrame:(CGRect)frame {
+- (instancetype)init {
 	self = %orig;
-	[self addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(cbdShowView)]];
+	if (self) {
+		UILongPressGestureRecognizer *recognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(cbdShowView)];
+		recognizer.minimumPressDuration = 1.0;
+		[[self window] addGestureRecognizer:recognizer];
+	}
+
 	return self;
 }
 
 %new
--(void)cbdShowView {
-	if ([[%c(SBIconController) sharedInstance] isEditing]) {
-		[[[%c(SBIconController) sharedInstance] editingEndTimer] invalidate];
-		[[CBDManager sharedInstance].view setPresented:YES];
+- (void)cbdShowView {
+	if (![[%c(SBIconController) sharedInstance] isEditing]) {
+		return;
 	}
+
+	[[[%c(SBIconController) sharedInstance] editingEndTimer] invalidate];
+	[[CBDManager sharedInstance].view setPresented:YES];
 }
 
 %end
